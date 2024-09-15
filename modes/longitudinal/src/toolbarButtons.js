@@ -284,11 +284,43 @@ const toolbarButtons = [
     type: 'ohif.action',
     props: {
       icon: 'tool-capture',
-      label: 'Capture',
+      label: 'Télécharger',
       type: 'action',
       commands: [
         {
           commandName: 'showDownloadViewportModal',
+          commandOptions: {},
+          context: 'CORNERSTONE',
+        },
+      ],
+    },
+  },
+  {
+    id: 'FastCapture',
+    type: 'ohif.action',
+    props: {
+      icon: 'tool-capture',
+      label: 'Capture',
+      type: 'action',
+      commands: [
+        {
+          commandName: 'showDownloadViewportModal2',
+          commandOptions: {},
+          context: 'CORNERSTONE',
+        },
+      ],
+    },
+  },
+  {
+    id: 'MultiCapture',
+    type: 'ohif.action',
+    props: {
+      icon: 'tool-capture',
+      label: 'Capture multiple',
+      type: 'action',
+      commands: [
+        {
+          commandName: 'showDownloadViewportModal3',
           commandOptions: {},
           context: 'CORNERSTONE',
         },

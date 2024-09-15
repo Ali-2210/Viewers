@@ -1,0 +1,5 @@
+{
+  "SERVER_URL": "",
+  "Dev_SERVER_URL": "http://localhost:5000",
+  "BmVieCaptureEndPoint": "/api/Upload/SaveImageFromViewer"
+}

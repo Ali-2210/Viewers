@@ -17,7 +17,9 @@ import {
   InputLabelWrapper,
   Button,
 } from '../';
-
+import configData from "../../../../viewer/public/config/bm_config.json";
+import html2canvas from 'html2canvas';
+import { getEnabledElement } from '@cornerstonejs/core';
 const FILE_TYPE_OPTIONS = [
   {
     value: 'jpg',
@@ -46,6 +48,8 @@ const ViewportDownloadForm = ({
   minimumSize,
   maximumSize,
   canvasClass,
+  fastCapture,
+  imageIndex
 }) => {
   const { t } = useTranslation('Modals');
 
@@ -107,6 +111,7 @@ const ViewportDownloadForm = ({
   };
 
   const downloadImage = () => {
+    debugger
     downloadBlob(
       filename || DEFAULT_FILENAME,
       fileType,
@@ -115,6 +120,123 @@ const ViewportDownloadForm = ({
     );
   };
 
+  const VIEWPORT_ID = 'cornerstone-viewport-download-form';
+  const getDataUrlFromViewPort = (callback: Function) => {
+    const divForDownloadViewport = document.querySelector(
+      `div[data-viewport-uid="${VIEWPORT_ID}"]`
+    );
+
+    html2canvas(divForDownloadViewport).then(canvas => {
+      var dataUrl = canvas.toDataURL();
+      callback(dataUrl);
+      // var win = window.open();
+      // win.document.write('<iframe src="' + dataUrl + '" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>');
+    });
+  }
+  const addToAttachment2 = () => addToAttachment(false);
+  const addToAttachment = (closeModal) => {
+    const callback = (dataUrl) => {
+      var isDev = process.env.NODE_ENV === 'development';
+      var url = (isDev ? configData.Dev_SERVER_URL : configData.SERVER_URL) + configData.BmVieCaptureEndPoint;
+      var a = getEnabledElement(activeViewportElement)
+      //var b = a.viewport
+      //var c = b.csImage
+      var imageId = a.viewport.getCurrentImageId();
+      const regexp = /.*studies\/(.*)\/series\/(.*)\/instances\/(.*)\/frames\/(.*)/g;
+      const match = imageId.matchAll(regexp).next()?.value;
+      var data = {
+        QueryString: window.location.search + "&study=" + ((match && match.length > 1) ? match[1] : "NA")
+          + "&serie=" + ((match && match.length > 2) ? match[2] : "NA")
+          + "&instance=" + ((match && match.length > 3) ? match[3] : "NA")
+          + "&frame=" + ((match && match.length > 4) ? match[4] : "NA")
+        , ImageIndex: imageIndex + 1, ImageContent: dataUrl.replace('data:image/png;base64,', '')
+      };
+      // if (isDev)
+      //   window.open().document.write('<iframe src="' + dataUrl + '" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>');
+
+      try {
+        fetch(url, { method: 'POST', headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+      .then((response) => { }).then((data) => { /*onClose(); */}).catch((err) => { });
+      } catch { }
+      if (closeModal)
+        onClose();
+    }
+    getDataUrlFromViewPort(callback);
+  }
+  const addToAttachment2_ = () => addToAttachment_(viewportPreview.src);
+  const addToAttachment_ = (dataUrl) => {
+    debugger
+    var url = (process.env.NODE_ENV === 'development' ? configData.Dev_SERVER_URL : configData.SERVER_URL) + configData.BmVieCaptureEndPoint;
+    var data = { QueryString: window.location.search, ImageIndex: imageIndex + 1, ImageContent: dataUrl.replace('data:image/png;base64,', '') };
+
+    //window.open(dataUrl, "_blank");
+    var win = window.open();
+    win.document.write('<iframe src="' + dataUrl + '" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>');
+
+    try {
+      fetch(url, { method: 'POST', headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+        .then((response) => { }).then((data) => { onClose(); }).catch((err) => { });
+    } catch {
+    }
+  }
+  const addToAttachment_3 = (dataUrl) => {
+    /*if (window.CurrentSerieImages)
+      window.CurrentSerieImages.push({ id: null, data: dataUrl });
+    //console.log(dataUrl);
+    //return
+    let pdfWindow = window.open("")
+    pdfWindow.document.write(
+      "<iframe width='100%' height='100%' src='" + dataUrl + "'></iframe>"
+    )
+    return;*/
+    debugger
+    var url = (process.env.NODE_ENV === 'development' ? configData.Dev_SERVER_URL : configData.SERVER_URL) + configData.BmVieCaptureEndPoint;
+    //debugger;
+    var data = { QueryString: window.location.search, ImageContent: dataUrl.replace('data:image/png;base64,', '') };
+    fetch(url, {
+      method: 'POST',//mode: 'no-cors',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    }).then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        onClose();
+        // Handle data
+      })
+      .catch((err) => {
+        console.log(err.message);
+      });
+
+  }
+  const addToAttachment_0 = () => {
+    var uid = window.location.pathname.replace('/viewer/', '');
+    var allInfo = uid.split('.');
+    var data = JSON.stringify({
+      "image": viewportPreview.src.replace('data:image/png;base64,', ''),
+      "procedureId": allInfo[6].toString()
+    });
+    fetch(configData.SERVER_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: data
+    }).then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        onClose();
+        // Handle data
+      })
+      .catch((err) => {
+        console.log(err.message);
+      });
+
+  }
   /**
    * @param {object} value - Input value
    * @param {string} dimension - "height" | "width"
@@ -214,6 +336,12 @@ const ViewportDownloadForm = ({
       width: validSize(viewportElementWidth),
       height: validSize(viewportElementHeight),
     }));
+    if (fastCapture) {
+      setTimeout(() => {
+        addToAttachment(true);
+      }, 1);
+    }
+    return;
   }, [
     loadImage,
     activeViewportElement,
@@ -272,111 +400,113 @@ const ViewportDownloadForm = ({
   }, [dimensions, filename, minimumSize]);
 
   return (
-    <div>
-      <Typography variant="h6">
-        {t(
-          'Please specify the dimensions, filename, and desired type for the output image.'
-        )}
-      </Typography>
+    <div style={{ visibility: false && fastCapture ? 'hidden' : 'visible' }} >
+      {fastCapture ? <></>
+        : <>
+          <Typography variant="h6">
+            {t(
+              'Please specify the dimensions, filename, and desired type for the output image.'
+            )}
+          </Typography>
 
-      <div className="flex flex-col mt-6">
-        <div className="w-full mb-4">
-          <Input
-            data-cy="file-name"
-            value={filename}
-            onChange={evt => setFilename(evt.target.value)}
-            label={t('File Name')}
-          />
-          {renderErrorHandler('filename')}
-        </div>
-        <div className="flex">
-          <div className="flex w-1/3">
-            <div className="flex flex-col grow">
-              <div className="w-full">
-                <Input
-                  type="number"
-                  min={minimumSize}
-                  max={maximumSize}
-                  label={t('Image width (px)')}
-                  value={dimensions.width}
-                  onChange={evt =>
-                    onDimensionsChange(evt.target.value, 'width')
-                  }
-                  data-cy="image-width"
-                />
-                {renderErrorHandler('width')}
-              </div>
-              <div className="w-full mt-4">
-                <Input
-                  type="number"
-                  min={minimumSize}
-                  max={maximumSize}
-                  label={t('Image height (px)')}
-                  value={dimensions.height}
-                  onChange={evt =>
-                    onDimensionsChange(evt.target.value, 'height')
-                  }
-                  data-cy="image-height"
-                />
-                {renderErrorHandler('height')}
-              </div>
+          <div className="flex flex-col mt-6">
+            <div className="w-full mb-4">
+              <Input
+                data-cy="file-name"
+                value={filename}
+                onChange={evt => setFilename(evt.target.value)}
+                label={t('File Name')}
+              />
+              {renderErrorHandler('filename')}
             </div>
+            <div className="flex">
+              <div className="flex w-1/3">
+                <div className="flex flex-col grow">
+                  <div className="w-full">
+                    <Input
+                      type="number"
+                      min={minimumSize}
+                      max={maximumSize}
+                      label={t('Image width (px)')}
+                      value={dimensions.width}
+                      onChange={evt =>
+                        onDimensionsChange(evt.target.value, 'width')
+                      }
+                      data-cy="image-width"
+                    />
+                    {renderErrorHandler('width')}
+                  </div>
+                  <div className="w-full mt-4">
+                    <Input
+                      type="number"
+                      min={minimumSize}
+                      max={maximumSize}
+                      label={t('Image height (px)')}
+                      value={dimensions.height}
+                      onChange={evt =>
+                        onDimensionsChange(evt.target.value, 'height')
+                      }
+                      data-cy="image-height"
+                    />
+                    {renderErrorHandler('height')}
+                  </div>
+                </div>
 
-            <div className="flex items-center mt-8">
-              <Tooltip
-                position="right"
-                content={keepAspect ? 'Dismiss Aspect' : 'Keep Aspect'}
-              >
-                <IconButton
-                  onClick={onKeepAspectToggle}
-                  size="small"
-                  rounded="full"
-                >
-                  <Icon name={keepAspect ? 'link' : 'unlink'} />
-                </IconButton>
-              </Tooltip>
+                <div className="flex items-center mt-8">
+                  <Tooltip
+                    position="right"
+                    content={keepAspect ? 'Dismiss Aspect' : 'Keep Aspect'}
+                  >
+                    <IconButton
+                      onClick={onKeepAspectToggle}
+                      size="small"
+                      rounded="full"
+                    >
+                      <Icon name={keepAspect ? 'link' : 'unlink'} />
+                    </IconButton>
+                  </Tooltip>
+                </div>
+              </div>
+
+              <div className="w-1/4 pl-6 ml-6 border-l border-secondary-dark">
+                <div>
+                  <InputLabelWrapper
+                    sortDirection="none"
+                    label={t('File Type')}
+                    isSortable={false}
+                    onLabelClick={() => { }}
+                  >
+                    <Select
+                      className="mt-2 text-white"
+                      isClearable={false}
+                      value={fileType}
+                      data-cy="file-type"
+                      onChange={value => {
+                        setFileType([value.value]);
+                      }}
+                      hideSelectedOptions={false}
+                      options={FILE_TYPE_OPTIONS}
+                      placeholder="File Type"
+                    />
+                  </InputLabelWrapper>
+                </div>
+                <div className="mt-4 ml-2">
+                  <label htmlFor="show-annotations" className="flex items-center">
+                    <input
+                      id="show-annotations"
+                      data-cy="show-annotations"
+                      type="checkbox"
+                      className="mr-2"
+                      checked={showAnnotations}
+                      onChange={event => setShowAnnotations(event.target.checked)}
+                    />
+                    <Typography>{t('Show Annotations')}</Typography>
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
-
-          <div className="w-1/4 pl-6 ml-6 border-l border-secondary-dark">
-            <div>
-              <InputLabelWrapper
-                sortDirection="none"
-                label={t('File Type')}
-                isSortable={false}
-                onLabelClick={() => {}}
-              >
-                <Select
-                  className="mt-2 text-white"
-                  isClearable={false}
-                  value={fileType}
-                  data-cy="file-type"
-                  onChange={value => {
-                    setFileType([value.value]);
-                  }}
-                  hideSelectedOptions={false}
-                  options={FILE_TYPE_OPTIONS}
-                  placeholder="File Type"
-                />
-              </InputLabelWrapper>
-            </div>
-            <div className="mt-4 ml-2">
-              <label htmlFor="show-annotations" className="flex items-center">
-                <input
-                  id="show-annotations"
-                  data-cy="show-annotations"
-                  type="checkbox"
-                  className="mr-2"
-                  checked={showAnnotations}
-                  onChange={event => setShowAnnotations(event.target.checked)}
-                />
-                <Typography>{t('Show Annotations')}</Typography>
-              </label>
-            </div>
-          </div>
-        </div>
-      </div>
-
+        </>}
       <div className="mt-8">
         <div
           className="p-4 rounded bg-secondary-dark border-secondary-primary"
@@ -400,29 +530,40 @@ const ViewportDownloadForm = ({
           )}
         </div>
       </div>
-
-      <div className="flex justify-end mt-4">
-        <Button
-          data-cy="cancel-btn"
-          variant="outlined"
-          size="initial"
-          color="black"
-          border="secondary"
-          onClick={onClose}
-          className="p-2"
-        >
-          {t('Cancel')}
-        </Button>
-        <Button
-          className="ml-2"
-          disabled={hasError}
-          onClick={downloadImage}
-          color="primary"
-          data-cy="download-btn"
-        >
-          {t('Download')}
-        </Button>
-      </div>
+      {fastCapture ? <></>
+        : <>
+          <div className="flex justify-end mt-4">
+            <Button
+              data-cy="cancel-btn"
+              variant="outlined"
+              size="initial"
+              color="black"
+              border="secondary"
+              onClick={onClose}
+              className="p-2"
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              className="ml-2"
+              disabled={hasError}
+              onClick={downloadImage}
+              color="primary"
+              data-cy="download-btn"
+            >
+              {t('Download')}
+            </Button>
+            <Button
+              className="ml-2"
+              disabled={hasError}
+              onClick={addToAttachment2}
+              color="primary"
+              data-cy="download-btn"
+            >
+              {t('Attacher')}
+            </Button>
+          </div>
+        </>}
     </div>
   );
 };

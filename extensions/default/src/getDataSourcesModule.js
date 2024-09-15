@@ -10,12 +10,18 @@ import { createDicomLocalApi } from './DicomLocalDataSource/index.js';
  *
  */
 function getDataSourcesModule() {
+  //debugger;
   return [
     {
-      name: 'dicomweb',
+      name: process.env.NODE_ENV === 'development' ? 'development':'production',
       type: 'webApi',
       createDataSource: createDicomWebApi,
     },
+    // {
+    //   name: 'dicomweb',
+    //   type: 'webApi',
+    //   createDataSource: createDicomWebApi,
+    // },
     {
       name: 'dicomjson',
       type: 'jsonApi',

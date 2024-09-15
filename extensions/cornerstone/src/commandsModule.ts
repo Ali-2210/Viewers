@@ -1,7 +1,9 @@
 import {
   getEnabledElement,
+  getOrCreateCanvas,
   StackViewport,
   utilities as csUtils,
+  VolumeViewport,
 } from '@cornerstonejs/core';
 import {
   ToolGroupManager,
@@ -16,7 +18,39 @@ import callInputDialog from './utils/callInputDialog';
 import { setColormap } from './utils/colormap/transferFunctionHelpers';
 import toggleMPRHangingProtocol from './utils/mpr/toggleMPRHangingProtocol';
 import toggleStackImageSync from './utils/stackSync/toggleStackImageSync';
-
+import { jumpToSlice } from '@cornerstonejs/tools/dist/esm/utilities/viewport';
+const GetIds = (shortCount, allCount) => {
+  shortCount = Math.min(shortCount, allCount)
+  var seed = (allCount - 1) / (shortCount - 1)
+  var ids = []
+  for (var i = 0; i < (shortCount - 1); i++) {
+    ids.push(Math.round(/*1 +*/ i * seed))
+  }
+  ids.push(allCount)
+  return ids;
+};
+const DO = (activeViewportIndex, viewport, servicesManager, i, ids) => {
+  if (i == ids.length)
+    return;
+  const { UIModalService, CornerstoneViewportService } = servicesManager.services;
+  var then = () => {
+    if (UIModalService) {
+      UIModalService.show({
+        content: CornerstoneViewportDownloadForm, title: "Encours...(" + (i + 1) + ")",
+        contentProps: {
+          activeViewportIndex: activeViewportIndex,
+          onClose: () => {
+            UIModalService.hide();
+            setTimeout(() => { DO(activeViewportIndex, viewport, servicesManager, i + 1, ids) }, 1);
+          },
+          CornerstoneViewportService: CornerstoneViewportService, fastCapture: true, imageIndex: ids[i]
+        },
+      });
+    }
+  }
+  jumpToSlice(viewport.element, { imageIndex: ids[i], debounceLoading: true }).then(then);
+  //CornerstoneViewportService.getCornerstoneViewportByIndex(activeViewportIndex).setImageIdIndex(ids[i]).then(then);
+};
 const commandsModule = ({ servicesManager }) => {
   const {
     ViewportGridService,
@@ -194,6 +228,8 @@ const commandsModule = ({ servicesManager }) => {
     },
     showDownloadViewportModal: () => {
       const { activeViewportIndex } = ViewportGridService.getState();
+      const { viewport } = _getActiveViewportEnabledElement();
+      const index = viewport.getCurrentImageIdIndex();
       const { UIModalService } = servicesManager.services;
 
       if (UIModalService) {
@@ -203,10 +239,76 @@ const commandsModule = ({ servicesManager }) => {
           contentProps: {
             activeViewportIndex,
             onClose: UIModalService.hide,
-            CornerstoneViewportService,
+            CornerstoneViewportService, fastCapture: false, imageIndex: index
           },
         });
       }
+    },
+    showDownloadViewportModal2: () => {
+      //debugger
+      const { activeViewportIndex } = ViewportGridService.getState();
+      const { viewport } = _getActiveViewportEnabledElement();
+      const index = viewport.getCurrentImageIdIndex();
+      const { UIModalService } = servicesManager.services;
+
+      if (UIModalService) {
+        UIModalService.show({
+          content: CornerstoneViewportDownloadForm,
+          title: 'Download High Quality Image',
+          contentProps: {
+            activeViewportIndex,
+            onClose: UIModalService.hide,
+            CornerstoneViewportService, fastCapture: true, imageIndex: index
+          },
+        });
+      }
+    },
+    /* showDownloadViewportModal3: () => {
+
+       const { viewport } = _getActiveViewportEnabledElement();
+       const { element } = viewport;
+
+       const downloadCanvas = getOrCreateCanvas(element);
+
+       const type = 'image/' + 'png';
+       const dataUrl = downloadCanvas.toDataURL(type, 1);
+       var win = window.open();
+       win.document.write('<iframe src="' + dataUrl + '" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>');
+
+     },*/
+    showDownloadViewportModal3: () => {
+
+      var count = parseInt(prompt("Entrer le nombre de captures:"));
+      if(!(count > 0))
+        return ;
+      const { activeViewportIndex } = ViewportGridService.getState();
+      const { viewport } = _getActiveViewportEnabledElement();
+      var data = CornerstoneViewportService.getViewportInfoByIndex(activeViewportIndex).viewportData.data;
+      var framsCount = (viewport instanceof StackViewport) ? data.imageIds.length
+        : (viewport instanceof VolumeViewport) ? activeViewportIndex > 0 ? 512 : data[0].imageIds.length
+          : 0;
+      var ids = GetIds(count, framsCount);
+      DO(activeViewportIndex, viewport, servicesManager, 0, ids);
+      return;
+      if (viewport instanceof VolumeViewport) {
+        //jumpToSlice(viewport.element,  {imageIndex : 15,debounceLoading: true});
+      }
+      if (viewport instanceof StackViewport) {
+        //debugger
+        //const { rotation: currentRotation } = viewport.getProperties();
+        //viewport.render();
+      }
+    },
+    showDownloadViewportModal3_: () => {
+      var count = parseInt(prompt("Entrer le nombre de captures:"));
+      const { activeViewportIndex, viewports } = ViewportGridService.getState();
+      var r1 = CornerstoneViewportService.getViewportInfoByIndex(activeViewportIndex).viewportData.data;
+      //var r2 = CornerstoneViewportService.getCornerstoneViewportByIndex(activeViewportIndex);
+      var framsCount = r1[0].imageIds.length;
+      /*var imageid = cornerstone.getEnabledElements()[0].image.imageId;*/
+      var imb = null;//imageid.substring(0, imageid.lastIndexOf('/') + 1);
+      var ids = GetIds(count, framsCount);
+      DO(activeViewportIndex, viewports[activeViewportIndex], servicesManager, 0, ids);
     },
     rotateViewport: ({ rotation }) => {
       const enabledElement = _getActiveViewportEnabledElement();
@@ -477,6 +579,16 @@ const commandsModule = ({ servicesManager }) => {
     },
     showDownloadViewportModal: {
       commandFn: actions.showDownloadViewportModal,
+      storeContexts: [],
+      options: {},
+    },
+    showDownloadViewportModal2: {
+      commandFn: actions.showDownloadViewportModal2,
+      storeContexts: [],
+      options: {},
+    },
+    showDownloadViewportModal3: {
+      commandFn: actions.showDownloadViewportModal3,
       storeContexts: [],
       options: {},
     },

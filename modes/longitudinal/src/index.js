@@ -115,7 +115,10 @@ function modeFactory() {
         'Zoom',
         'WindowLevel',
         'Pan',
+        // 'Capture',
         'Capture',
+        'FastCapture',
+        'MultiCapture',
         'Layout',
         'MPR',
         'Crosshairs',
@@ -142,7 +145,7 @@ function modeFactory() {
       series: [],
     },
 
-    isValidMode: function({ modalities }) {
+    isValidMode: function ({ modalities }) {
       const modalities_list = modalities.split('\\');
 
       // Exclude non-image modalities

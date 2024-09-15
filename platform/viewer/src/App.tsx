@@ -51,13 +51,15 @@ function App({ config, defaultExtensions, defaultModes }) {
   // Set appConfig
   const appConfigState = init.appConfig;
   const {
-    routerBasename,
+    //routerBasename ,
     modes,
     dataSources,
     oidc,
     showStudyList,
   } = appConfigState;
 
+  const routerBasename = "/dicom_Viewer"; 
+//  const routerBasename = "/dicom_Viewer/index.html";
   const {
     UIDialogService,
     UIModalService,
@@ -145,7 +147,9 @@ App.defaultProps = {
      * Hosted at: https://ohif.org/where-i-host-the/viewer/
      * Value: `/where-i-host-the/viewer/`
      * */
-    routerBaseName: '/',
+    //routerBaseName: '/',
+    routerBaseName: "/dicom_Viewer",
+    //routerBasename: "/dicom_Viewer/index.html",
     /**
      *
      */

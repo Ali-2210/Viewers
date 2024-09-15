@@ -70,6 +70,8 @@ class MetadataProvider {
       SeriesInstanceUID,
       SOPInstanceUID
     );
+    //instance.PlanarConfiguration = /*'US';//*/undefined;
+    //instance.NumberOfFrames = 6;
     return (
       (frameNumber && combineFrameInstance(frameNumber, instance)) || instance
     );
@@ -207,6 +209,7 @@ class MetadataProvider {
         metadata = {
           samplesPerPixel: toNumber(instance.SamplesPerPixel),
           photometricInterpretation: instance.PhotometricInterpretation,
+          //photometricInterpretation: "YBR_FULL_422",//"YBR_FULL",///*"MONOCHROME2",//*/ instance.PhotometricInterpretation,
           rows: toNumber(instance.Rows),
           columns: toNumber(instance.Columns),
           bitsAllocated: toNumber(instance.BitsAllocated),
@@ -241,8 +244,18 @@ class MetadataProvider {
             'BluePaletteColorLookupTableData',
             'BluePaletteColorLookupTableDescriptor'
           ),
-        };
+//           /************************************************************* */
+//     InstanceNumber: "1",
+//     ImageType: [
+//       "DERIVED",
+//       "PRIMARY"
+//     ],
+//     Modality: "US",
 
+
+//           /************************************************************* */
+         };
+// debugger;
         break;
       case WADO_IMAGE_LOADER_TAGS.VOI_LUT_MODULE:
         const { WindowCenter, WindowWidth } = instance;

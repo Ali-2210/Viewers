@@ -19,6 +19,78 @@ window.config = {
   },
   // filterQueryParam: false,
   dataSources: [
+    /****************************************************************************************/
+    {
+      friendlyName: 'development',
+      namespace: '@ohif/extension-default.dataSourcesModule.development',
+      sourceName: 'development',
+      configuration: {
+        name: 'Orthanc1',
+        wadoUriRoot: 'http://localhost:8041/orthanc/dicom-web',
+        qidoRoot: 'http://localhost:8041/orthanc/dicom-web',
+        wadoRoot: 'http://localhost:8041/orthanc/dicom-web',
+        // wadoUriRoot: 'http://localhost:8042/',
+        // qidoRoot: 'http://localhost:8042/',
+        // wadoRoot: 'http://localhost:8042/',
+        qidoSupportsIncludeField: false,
+        imageRendering: 'wadors',
+        thumbnailRendering: 'wadors',
+        requestOptions: {
+          auth: 'USER:pldjj5127',
+          logRequests: true,
+          logResponses: false,
+          logTiming: true,
+          requestFromBrowser: true,
+        },
+        /*name: 'aws',
+        // old server
+        // wadoUriRoot: 'https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/wado',
+        // qidoRoot: 'https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs',
+        // wadoRoot: 'https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs',
+        // new server
+        wadoUriRoot: 'https://domvja9iplmyu.cloudfront.net/dicomweb',
+        qidoRoot: 'https://domvja9iplmyu.cloudfront.net/dicomweb',
+        wadoRoot: 'https://domvja9iplmyu.cloudfront.net/dicomweb',
+        qidoSupportsIncludeField: false,
+        supportsReject: false,
+        imageRendering: 'wadors',
+        thumbnailRendering: 'wadors',*/
+        enableStudyLazyLoad: true,
+        supportsFuzzyMatching: false,
+        supportsWildcard: true,
+        staticWado: true,
+        singlepart: 'bulkdata,video,pdf',
+      },
+    },
+    {
+      friendlyName: 'production',
+      namespace: '@ohif/extension-default.dataSourcesModule.production',
+      sourceName: 'production',
+      configuration: {
+        name: 'Orthanc2',
+        wadoUriRoot: '/orthanc/dicom-web',
+        qidoRoot: '/orthanc/dicom-web',
+        wadoRoot: '/orthanc/dicom-web',
+        qidoSupportsIncludeField: false,
+        imageRendering: 'wadors',
+        thumbnailRendering: 'wadors',
+        enableStudyLazyLoad: true,
+        requestOptions: {
+          auth: "USER:pldjj5127",
+          logRequests: true,
+          logResponses: false,
+          logTiming: true,
+          requestFromBrowser: true,
+        },
+
+        enableStudyLazyLoad: true,
+        supportsFuzzyMatching: false,
+        supportsWildcard: true,
+        staticWado: true,
+        singlepart: 'bulkdata,video,pdf',
+      },
+    },
+    /****************************************************************************************/
     {
       friendlyName: 'dcmjs DICOMWeb Server',
       namespace: '@ohif/extension-default.dataSourcesModule.dicomweb',
@@ -85,7 +157,7 @@ window.config = {
   //       ))
   //   },
   // },
-  defaultDataSourceName: 'dicomweb',
+  //defaultDataSourceName: 'dicomweb',
   hotkeys: [
     {
       commandName: 'incrementActiveViewport',

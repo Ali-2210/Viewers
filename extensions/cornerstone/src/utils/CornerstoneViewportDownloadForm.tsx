@@ -21,7 +21,7 @@ const VIEWPORT_ID = 'cornerstone-viewport-download-form';
 const CornerstoneViewportDownloadForm = ({
   onClose,
   activeViewportIndex,
-  CornerstoneViewportService,
+  CornerstoneViewportService, fastCapture, imageIndex
 }) => {
   const enabledElement = OHIFgetEnabledElement(activeViewportIndex);
   const activeViewportElement = enabledElement?.element;
@@ -113,6 +113,7 @@ const CornerstoneViewportDownloadForm = ({
       downloadViewportElement.addEventListener(
         Enums.Events.IMAGE_RENDERED,
         function updateViewport(event) {
+          debugger
           const enabledElement = getEnabledElement(event.target);
           const { viewport } = enabledElement;
           const { element } = viewport;
@@ -163,13 +164,15 @@ const CornerstoneViewportDownloadForm = ({
 
           downloadViewport.setStack([imageId]).then(() => {
             downloadViewport.setProperties(properties);
+            debugger
 
-            const newWidth = Math.min(width || image.width, MAX_TEXTURE_SIZE);
-            const newHeight = Math.min(
-              height || image.height,
-              MAX_TEXTURE_SIZE
-            );
+            const newWidth1 = Math.min(width || image.width, MAX_TEXTURE_SIZE);
+            var ratio = viewport.canvas.clientWidth / viewport.canvas.clientHeight ;
 
+            const newHeight = Math.min(height || image.height,MAX_TEXTURE_SIZE);
+            const newWidth = ratio<1 ? newWidth1 : newWidth1 * ratio
+
+            downloadViewport.setCamera(viewport.getCamera());
             resolve({ width: newWidth, height: newHeight });
           });
         } else if (downloadViewport instanceof VolumeViewport) {
@@ -262,6 +265,8 @@ const CornerstoneViewportDownloadForm = ({
       loadImage={loadImage}
       toggleAnnotations={toggleAnnotations}
       downloadBlob={downloadBlob}
+      fastCapture={fastCapture}
+      imageIndex={imageIndex}
     />
   );
 };

@@ -24,7 +24,8 @@ export default class ExtensionManager {
     this._extensionLifeCycleHooks = { onModeEnter: {}, onModeExit: {} };
     this.dataSourceMap = {};
     this.dataSourceDefs = {};
-    this.defaultDataSourceName = appConfig.defaultDataSourceName;
+    this.defaultDataSourceName = process.env.NODE_ENV === 'development' ? 'development':'production';
+    //this.defaultDataSourceName = appConfig.defaultDataSourceName;
     this.activeDataSource = undefined;
   }
 
