@@ -65,7 +65,7 @@ function ViewerLayout({
   const buildNumber = process.env.BUILD_NUM;
 
   const menuOptions = [
-    {
+    /*{
       title: t('Header:About'),
       icon: 'info',
       onClick: () =>
@@ -74,7 +74,7 @@ function ViewerLayout({
           title: 'About OHIF Viewer',
           contentProps: { versionNumber, buildNumber },
         }),
-    },
+    },*/
     {
       title: t('Header:Preferences'),
       icon: 'settings',
@@ -197,7 +197,7 @@ function ViewerLayout({
   const leftPanelComponents = leftPanels.map(getPanelData);
   const rightPanelComponents = rightPanels.map(getPanelData);
   const viewportComponents = viewports.map(getViewportComponentData);
-  debugger
+  debugger;
   return (
     <div>
       <Header
